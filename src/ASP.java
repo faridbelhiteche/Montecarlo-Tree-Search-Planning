@@ -250,7 +250,7 @@ public class ASP extends AbstractPlanner {
         try {
             final ASP planner = new ASP();
             CommandLine cmd = new CommandLine(planner);
-            cmd.execute(args);
+            cmd.execute("domain_blocks.pddl","blocks_p001.pddl");
         } catch (IllegalArgumentException e) {
             LOGGER.fatal(e.getMessage());
         }
