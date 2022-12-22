@@ -370,9 +370,11 @@ public class ASP extends AbstractPlanner {
                 counter = 0;
             }else {
                 counter ++;
+
             }
             current = next;
         }
+
         return extractPlan(current,problem);
     }
 
@@ -386,7 +388,7 @@ public class ASP extends AbstractPlanner {
 
 
         for(int i = 1; i < NUM_WALKS; i++){
-            Node nTest = n;
+            Node nTest = nMin;
             for (int j = 1; j < LENGTH_WALK; j++){
                 //on récupère les actions possibles dans la variable a
                 List<Action> a = p.getActions();
