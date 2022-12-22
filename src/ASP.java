@@ -7,20 +7,14 @@ import fr.uga.pddl4j.planners.Planner;
 import fr.uga.pddl4j.planners.PlannerConfiguration;
 import fr.uga.pddl4j.planners.SearchStrategy;
 import fr.uga.pddl4j.planners.statespace.search.StateSpaceSearch;
-import fr.uga.pddl4j.problem.DefaultProblem;
-import fr.uga.pddl4j.problem.Problem;
-import fr.uga.pddl4j.problem.State;
+import fr.uga.pddl4j.problem.*;
 import fr.uga.pddl4j.problem.operator.Action;
 import fr.uga.pddl4j.problem.operator.ConditionalEffect;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The class is an example. It shows how to create a simple A* search planner able to
@@ -159,23 +153,24 @@ public class ASP extends AbstractPlanner {
      */
     @Override
     public Plan solve(final Problem problem) {
-        // Creates the A* search strategy
-        StateSpaceSearch search = StateSpaceSearch.getInstance(SearchStrategy.Name.ASTAR,
-                this.getHeuristic(), this.getHeuristicWeight(), this.getTimeout());
-        LOGGER.info("* Starting A* search \n");
+        LOGGER.info("* Starting Montecarlo search\n");
         // Search a solution
-        Plan plan = search.searchPlan(problem);
-        // If a plan is found update the statistics of the planner and log search information
+        final long begin = System.currentTimeMillis();
+        final Plan plan = this.LocalSearchMCRW(problem);
+        final long end = System.currentTimeMillis();
+        LOGGER.info("* Starting Montecarlo search\n");
+        // If a plan is found update the statistics of the planner
+        // and log search information
         if (plan != null) {
             LOGGER.info("* A* search succeeded\n");
-            this.getStatistics().setTimeToSearch(search.getSearchingTime());
-            this.getStatistics().setMemoryUsedToSearch(search.getMemoryUsed());
+            this.getStatistics().setTimeToSearch(end - begin);
         } else {
             LOGGER.info("* A* search failed\n");
         }
         // Return the plan found or null if the search fails.
         return plan;
     }
+
 
     /**
      * Checks the planner configuration and returns if the configuration is valid.
@@ -312,6 +307,7 @@ public class ASP extends AbstractPlanner {
                     // We get the actions of the problem
                     Action a = problem.getActions().get(i);
                     // If the action is applicable in the current node
+                    System.out.println(a.toString());
                     if (a.isApplicable(current)) {
                         Node next = new Node(current);
                         // We apply the effect of the action
@@ -337,6 +333,104 @@ public class ASP extends AbstractPlanner {
 
         // Finally, we return the search computed or null if no search was found
         return plan;
+    }
+
+    public static int MAX_STEPS = 7;
+    public Plan LocalSearchMCRW(Problem problem){
+
+        // On instancie l'heuristique
+        final StateHeuristic heuristic = StateHeuristic.getInstance(this.getHeuristic(), problem);
+
+        // On récupère l'état initial du problème
+        final State init = new State(problem.getInitialState());
+
+        final Goal G = new Goal(problem.getGoal());
+
+        //On instancie le nœud associé à l'état initial
+        final Node root = new Node(init, null, -1, 0, heuristic.estimate(init, problem.getGoal()));
+
+        //On récupère l'heuristique du nœud en question
+        double hMin = root.getHeuristic();
+
+        //on initialise le compteur
+        int counter = 0;
+
+        Node current = root;
+
+
+        while(!current.satisfy(problem.getGoal())){
+            if(counter > MAX_STEPS || DeadEnd(current, problem)) {
+                current = root;
+                counter = 0;
+            }
+            Node next = MonteCarloRandomWalk(current,G,problem);
+            next.setParent(current);
+            if(next.getHeuristic() < hMin){
+                hMin = next.getHeuristic();
+                counter = 0;
+            }else {
+                counter ++;
+            }
+            current = next;
+        }
+        return extractPlan(current,problem);
+    }
+
+    public Node MonteCarloRandomWalk (Node n, Goal g, Problem p){
+
+        int NUM_WALKS = 2000;
+        int LENGTH_WALK = 10;
+
+        Node nMin = n;
+        double hMin = Double.MAX_VALUE;
+
+
+        for(int i = 1; i < NUM_WALKS; i++){
+            Node nTest = n;
+            for (int j = 1; j < LENGTH_WALK; j++){
+                //on récupère les actions possibles dans la variable a
+                List<Action> a = p.getActions();
+                //on retire toutes les actions qui ne sont pas réalisables de la liste
+                a.removeIf(action -> !action.isApplicable(nTest));
+                if(a.size() == 0){
+                    break;
+                }
+                //on récupère une action aléatoire parmi les actions restantes
+                Random r = new Random();
+                int index = r.nextInt(a.size());
+                Action randomAction = a.get(index);
+                // On applique les effets de l'action
+                final List<ConditionalEffect> effects = randomAction.getConditionalEffects();
+                nTest.apply(effects);
+
+                nTest.setAction(index);
+
+                if (nTest.satisfy(g)){
+                    return nTest;
+                }
+            }
+            if (nTest.getHeuristic() < hMin){
+                nMin = nTest;
+                hMin = nTest.getHeuristic();
+            }
+        }
+        if(nMin == null){
+            return n;
+        }
+        else{
+            return nMin;
+        }
+    }
+
+
+    public Boolean DeadEnd(Node n,Problem p){
+        List<Action> a = p.getActions();
+        //on retire toutes les actions qui ne sont pas réalisables de la liste
+        a.removeIf(action -> !action.isApplicable(n));
+        if(a.size() == 0){
+            return true;
+        }
+        return false;
     }
 
     /**
