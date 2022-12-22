@@ -338,52 +338,51 @@ public class ASP extends AbstractPlanner {
     public Plan LocalSearchMCRW(Problem problem){
 
         // On instancie l'heuristique
-        final StateHeuristic heuristic = StateHeuristic.getInstance(this.getHeuristic(), problem);
+        StateHeuristic heuristic = StateHeuristic.getInstance(this.getHeuristic(), problem);
 
         // On récupère l'état initial du problème
-        final State init = new State(problem.getInitialState());
+        State init = new State(problem.getInitialState());
 
         final Goal G = new Goal(problem.getGoal());
 
         //On instancie le nœud associé à l'état initial
-        final Node root = new Node(init, null, -1, 0, heuristic.estimate(init, problem.getGoal()));
+        Node current = new Node(init, null, -1, 0, 0, heuristic.estimate(init, problem.getGoal()));
 
         //On récupère l'heuristique du nœud en question
-        double hMin = root.getHeuristic();
+        double hMin = current.getHeuristic();
 
         //on initialise le compteur
         int counter = 0;
 
-        Node current = root;
+        //Node current = root;
 
 
-        while(!current.satisfy(problem.getGoal())){
-            if(counter > MAX_STEPS || DeadEnd(current, problem)) {
-                current = root;
+        while(!current.satisfy(G)){
+            //System.out.println(current.getHeuristic());
+            //System.out.println("MAX_STEPS" + MAX_STEPS);
+            //System.out.println("Counter" + counter);
+            //System.out.println(getApplicableActions(problem, current).isEmpty());
+            if(counter > MAX_STEPS || deadEnd(current, problem)) {
+                current = new Node(init, null, -1, 0, 0, heuristic.estimate(init, problem.getGoal()));;
                 counter = 0;
             }
 
-            Node next = MonteCarloRandomWalk(current,G,problem);
-            next.setParent(current);
-            next.setHeuristic(heuristic.estimate(next, problem.getGoal()));
-
-            current = next;
-
-            if(next.getHeuristic() < hMin){
-                hMin = next.getHeuristic();
+            current = MonteCarloRandomWalk(current,problem, heuristic);
+            if(current.getHeuristic() < hMin){
+                hMin = current.getHeuristic();
                 counter = 0;
+                //System.out.println("avance");
             }else {
                 counter ++;
+                //System.out.println("n'avance pas");
             }
         }
 
         return extractPlan(current,problem);
     }
 
-    public Node MonteCarloRandomWalk (Node n, Goal g, Problem p){
+    public Node MonteCarloRandomWalk (Node n, Problem p, StateHeuristic h){
 
-        // On instancie l'heuristique
-        final StateHeuristic heuristic = StateHeuristic.getInstance(this.getHeuristic(), p);
 
         int NUM_WALKS = 2000;
         int LENGTH_WALK = 10;
@@ -393,28 +392,24 @@ public class ASP extends AbstractPlanner {
 
         //nMin.setHeuristic(heuristic.estimate(nMin, p.getGoal()));
 
-        for(int i = 1; i < NUM_WALKS; i++){
+        for(int i = 0; i < NUM_WALKS; i++){
             Node nTest = n;
-            nTest.setHeuristic(heuristic.estimate(nTest, p.getGoal()));
-            for (int j = 1; j < LENGTH_WALK; j++){
+            //nTest.setHeuristic(heuristic.estimate(nTest, p.getGoal()));
+            for (int j = 0; j < LENGTH_WALK; j++){
                 //on récupère les actions possibles dans la variable a
-                List<Action> a = p.getActions();
-                //on retire toutes les actions qui ne sont pas réalisables de la liste
-                a.removeIf(action -> !action.isApplicable(nTest));
-                if(a.size() == 0){
-                    break;
-                }
-                //on récupère une action aléatoire parmi les actions restantes
-                Random r = new Random();
-                int index = r.nextInt(a.size());
-                Action randomAction = a.get(index);
+                List<Action> a = actionsApplicables(nTest, p);
+                Collections.shuffle(a);
+                Action randomAction = a.get(0);
                 // On applique les effets de l'action
                 final List<ConditionalEffect> effects = randomAction.getConditionalEffects();
-                nTest.apply(effects);
-                //nTest.setAction(index);
-                nTest.setHeuristic(heuristic.estimate(nTest, p.getGoal()));
+                State s = new State(nTest);
+                s.apply(effects);
+                Node fils = new Node(s, nTest, p.getActions().indexOf(randomAction), n.getCost() + 1, n.getDepth() + 1, 0);
+                fils.setHeuristic(h.estimate(fils, p.getGoal()));
+                nTest = fils;
 
-                if (nTest.satisfy(g)){
+
+                if (nTest.satisfy(p.getGoal())){
                     return nTest;
                 }
             }
@@ -433,14 +428,17 @@ public class ASP extends AbstractPlanner {
     }
 
 
-    public Boolean DeadEnd(Node n,Problem p){
+    public Boolean deadEnd(Node n,Problem p){
+        return actionsApplicables(n, p).isEmpty();
+    }
+
+    private List<Action> actionsApplicables(Node n, Problem p) {
         List<Action> a = p.getActions();
-        //on retire toutes les actions qui ne sont pas réalisables de la liste
-        a.removeIf(action -> !action.isApplicable(n));
-        if(a.size() == 0){
-            return true;
-        }
-        return false;
+        List<Action> actionsApplicables = new ArrayList<>();
+        for (Action action : a)
+            if (action.isApplicable(n))
+                actionsApplicables.add(action);
+        return actionsApplicables;
     }
 
     /**
@@ -460,7 +458,6 @@ public class ASP extends AbstractPlanner {
         }
         return plan;
     }
-
 
 
 
