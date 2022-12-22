@@ -280,6 +280,7 @@ public class ASP extends AbstractPlanner {
             }
         });
 
+
         // We create the root node of the tree search
         final Node root = new Node(init, null, -1, 0, heuristic.estimate(init, problem.getGoal()));
 
