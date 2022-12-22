@@ -2,10 +2,8 @@ import fr.uga.pddl4j.heuristics.state.StateHeuristic;
 import fr.uga.pddl4j.parser.DefaultParsedProblem;
 import fr.uga.pddl4j.plan.Plan;
 import fr.uga.pddl4j.plan.SequentialPlan;
-import fr.uga.pddl4j.planners.AbstractPlanner;
-import fr.uga.pddl4j.planners.Planner;
-import fr.uga.pddl4j.planners.PlannerConfiguration;
-import fr.uga.pddl4j.planners.SearchStrategy;
+import fr.uga.pddl4j.planners.*;
+import fr.uga.pddl4j.planners.statespace.HSP;
 import fr.uga.pddl4j.planners.statespace.search.StateSpaceSearch;
 import fr.uga.pddl4j.problem.*;
 import fr.uga.pddl4j.problem.operator.Action;
@@ -14,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -161,11 +160,10 @@ public class ASP extends AbstractPlanner {
         // If a plan is found update the statistics of the planner
         // and log search information
         if (plan != null) {
-            LOGGER.info("* A* search succeeded\n");
+            LOGGER.info("* Montecarlo search succeeded\n");
             this.getStatistics().setTimeToSearch(end - begin);
-            System.out.println("Temps total : " + (end-begin));
         } else {
-            LOGGER.info("* A* search failed\n");
+            LOGGER.info("* Montecarlo search failed\n");
         }
         // Return the plan found or null if the search fails.
         return plan;
@@ -241,15 +239,62 @@ public class ASP extends AbstractPlanner {
      *
      * @param args the arguments of the command line.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         try {
-            final ASP planner = new ASP();
-            CommandLine cmd = new CommandLine(planner);
-            cmd.execute("domain_blocks.pddl","blocks_p001.pddl");
-            System.out.println("TEST//////////////////" + (planner.getStatistics().getTimeToParse() + planner.getStatistics().getTimeToEncode()+ planner.getStatistics().getTimeToSearch()));
+            final ASP mrwPlanner = new ASP();
+            final HSP hspPlanner = new HSP();
+
+            /**
+             * 2 attributs pour l'écriture des résultats dans un fichier + écriture de l'entête dans le fichier.
+             */
+            File resultFile = new File("pddl/results.csv");
+            BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile));
+            writer.write("domain,n_problem,MRW_time_spent,MRW_plan_length,HSP_time_spent,HSP_plan_length");
+            writer.newLine();
+
+
+            List<File> blocks_problems = List.of(new File("pddl/problemes_blocks").listFiles());
+            List<File> depots_problems = List.of(new File("pddl/problemes_depots").listFiles());
+            List<File> gripper_problems = List.of(new File("pddl/problemes_gripper").listFiles());
+            List<File> logistics_problems = List.of(new File("pddl/problemes_logistics").listFiles());
+
+            Map<File, List<File>> pddlFiles = new TreeMap<>();
+            pddlFiles.put(new File("pddl/domain_blocks.pddl"), blocks_problems);
+            pddlFiles.put(new File("pddl/domain_depots.pddl"), depots_problems);
+            pddlFiles.put(new File("pddl/domain_gripper.pddl"), gripper_problems);
+            pddlFiles.put(new File("pddl/domain_logistics.pddl"), logistics_problems);
+
+            for(File domainFile : pddlFiles.keySet()) {
+                for(File problemFile : pddlFiles.get(domainFile)) {
+                    String domainPath = domainFile.getPath();
+                    String problemPath = problemFile.getPath();
+                    mrwPlanner.setDomain(domainPath);
+                    hspPlanner.setDomain(domainPath);
+                    mrwPlanner.setProblem(problemPath);
+                    hspPlanner.setProblem(problemPath);
+
+                    String domain = domainFile.getName();
+                    String problem = problemFile.getName();
+                    String mrwResults = run(mrwPlanner);
+                    String hspResults = run(hspPlanner);
+                    writer.write(domain + "," + problem + "," + mrwResults + "," + hspResults);
+                    writer.newLine();
+                }
+            }
+
+            writer.close();
+
         } catch (IllegalArgumentException e) {
             LOGGER.fatal(e.getMessage());
         }
+    }
+
+    private static String run(AbstractPlanner planner) throws FileNotFoundException {
+        Plan p = planner.solve();
+        Statistics s = planner.getStatistics();
+        double TimeSpent = s.getTimeToParse() + s.getTimeToEncode() + s.getTimeToSearch();
+        int planLength = p == null ? 0 : p.size();
+        return TimeSpent + "," + planLength;
     }
 
 
