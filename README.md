@@ -1,4 +1,4 @@
-# Montecarlo-Tree-Search-Planning
+# Montecarlo-Tree-Search-Planning vs A* (ASP)
 
 Faire fonctionner le projet :
 
