@@ -22,8 +22,8 @@ Exécutez ensuite le fichier src/ASP.java
   Soit en cliquant sur la flèche verte en haut
   Soit en utilisant MAJ + F10
 
-L'exécution du fichier devrait produire un fichier "resultats.csv". Dans ce dernier sont retranscris les résultats obtenus par les différents algorithmes au format csv, ce qui nous permet ensuite d'utiliser le fichier "script_graphes.py" qui est un script traçant les courbes représentatives des résultats.
+L'exécution du fichier devrait produire un fichier "resultats.csv" (dans le dossier pddl). Dans ce dernier sont retranscris les résultats obtenus par les différents algorithmes au format csv, ce qui nous permet ensuite d'utiliser le fichier "script_graphes.py" qui est un script traçant les courbes représentatives des résultats.
   
-Pour tracer les courbes, il suffit d'ouvrir le script "script_graphes.py" et de l'exécuter, en mettant bien en paramètre le nom du fichier csv produit. Pour cela vous aurez besoin d'installer Python sur votre machine, si ce n'est pas déjà fait.
+Pour tracer les courbes, il suffit d'ouvrir le script "script_graphes.py" (dans le m et de l'exécuter, en mettant bien en paramètre le nom du fichier csv produit. Pour cela vous aurez besoin d'installer Python sur votre machine, si ce n'est pas déjà fait.
   
-Un compte rendu de notre expérience est disponible dans le git, sous le nom de "resultats.pdf"
+Un compte rendu de notre expérience est disponible à la racine du git, sous le nom de "resultats.pdf"
