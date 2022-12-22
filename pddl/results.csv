@@ -1,0 +1,16 @@
+domain,n_problem,MRW_time_spent,MRW_plan_length,HSP_time_spent,HSP_plan_length
+domain_blocks.pddl,p005.pddl,447.0,14,16.0,10
+domain_blocks.pddl,p010.pddl,2201.0,30,30.0,20
+domain_blocks.pddl,p001.pddl,11.0,10,5.0,6
+domain_blocks.pddl,p009.pddl,6172.0,34,19.0,20
+domain_blocks.pddl,p008.pddl,136.0,16,5.0,10
+domain_blocks.pddl,p003.pddl,71.0,20,4.0,12
+domain_blocks.pddl,p007.pddl,133.0,18,5.0,12
+domain_blocks.pddl,p006.pddl,285.0,34,4.0,16
+domain_blocks.pddl,p004.pddl,89.0,16,3.0,12
+domain_depots.pddl,p04.pddl,150218.0,77,4872.0,30
+domain_depots.pddl,p07.pddl,20180.0,39,188.0,21
+domain_depots.pddl,p03.pddl,2997.0,60,605.0,29
+domain_depots.pddl,p01.pddl,132.0,18,7.0,10
+domain_depots.pddl,p02.pddl,689.0,27,17.0,15
+domain_gripper.pddl,p01.pddl,145.0,11,16.0,9
