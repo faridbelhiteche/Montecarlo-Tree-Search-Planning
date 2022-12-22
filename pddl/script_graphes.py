@@ -16,8 +16,8 @@ problems=[]
 
 #on ajoute les valeurs dans chaque vecteur
 for i in data.index:
-    #if data.domain[i] == 'domain_depots.pddl':
-    if data.domain[i] == 'domain_blocks.pddl':
+    if data.domain[i] == 'domain_depots.pddl':
+    #if data.domain[i] == 'domain_blocks.pddl':
         index = i
         times_MRW.append(data.MRW_time_spent[i])
         steps_MRW.append(data.MRW_plan_length[i])

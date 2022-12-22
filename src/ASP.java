@@ -255,8 +255,8 @@ public class ASP extends AbstractPlanner {
 
             List<File> blocks_problems = List.of(new File("pddl/problemes_blocks").listFiles());
             List<File> depots_problems = List.of(new File("pddl/problemes_depots").listFiles());
-            List<File> gripper_problems = List.of(new File("pddl/problemes_gripper").listFiles());
-            List<File> logistics_problems = List.of(new File("pddl/problemes_logistics").listFiles());
+            //List<File> gripper_problems = List.of(new File("pddl/problemes_gripper").listFiles());
+            //List<File> logistics_problems = List.of(new File("pddl/problemes_logistics").listFiles());
 
             Map<File, List<File>> pddlFiles = new TreeMap<>();
             pddlFiles.put(new File("pddl/domain_blocks.pddl"), blocks_problems);
