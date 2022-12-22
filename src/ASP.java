@@ -76,7 +76,6 @@ public class ASP extends AbstractPlanner {
     public ASP() {
         this(ASP.getDefaultConfiguration());
     }
-
     /**
      * Creates a new A* search planner with a specified configuration.
      *
@@ -363,16 +362,19 @@ public class ASP extends AbstractPlanner {
                 current = root;
                 counter = 0;
             }
+
             Node next = MonteCarloRandomWalk(current,G,problem);
             next.setParent(current);
+            next.setHeuristic(heuristic.estimate(next, problem.getGoal()));
+
+            current = next;
+
             if(next.getHeuristic() < hMin){
                 hMin = next.getHeuristic();
                 counter = 0;
             }else {
                 counter ++;
-
             }
-            current = next;
         }
 
         return extractPlan(current,problem);
@@ -380,15 +382,20 @@ public class ASP extends AbstractPlanner {
 
     public Node MonteCarloRandomWalk (Node n, Goal g, Problem p){
 
+        // On instancie l'heuristique
+        final StateHeuristic heuristic = StateHeuristic.getInstance(this.getHeuristic(), p);
+
         int NUM_WALKS = 2000;
         int LENGTH_WALK = 10;
 
-        Node nMin = n;
-        double hMin = Double.MAX_VALUE;
+        Node nMin = null;
+        double hMin = Double.MAX_VALUE-1;
 
+        //nMin.setHeuristic(heuristic.estimate(nMin, p.getGoal()));
 
         for(int i = 1; i < NUM_WALKS; i++){
-            Node nTest = nMin;
+            Node nTest = n;
+            nTest.setHeuristic(heuristic.estimate(nTest, p.getGoal()));
             for (int j = 1; j < LENGTH_WALK; j++){
                 //on récupère les actions possibles dans la variable a
                 List<Action> a = p.getActions();
@@ -404,24 +411,25 @@ public class ASP extends AbstractPlanner {
                 // On applique les effets de l'action
                 final List<ConditionalEffect> effects = randomAction.getConditionalEffects();
                 nTest.apply(effects);
-
-                nTest.setAction(index);
+                //nTest.setAction(index);
+                nTest.setHeuristic(heuristic.estimate(nTest, p.getGoal()));
 
                 if (nTest.satisfy(g)){
                     return nTest;
                 }
             }
+
             if (nTest.getHeuristic() < hMin){
                 nMin = nTest;
                 hMin = nTest.getHeuristic();
             }
         }
+
         if(nMin == null){
             return n;
         }
-        else{
-            return nMin;
-        }
+
+        return nMin;
     }
 
 
@@ -452,4 +460,10 @@ public class ASP extends AbstractPlanner {
         }
         return plan;
     }
+
+
+
+
 }
+
+
