@@ -163,6 +163,7 @@ public class ASP extends AbstractPlanner {
         if (plan != null) {
             LOGGER.info("* A* search succeeded\n");
             this.getStatistics().setTimeToSearch(end - begin);
+            System.out.println("Temps total : " + (end-begin));
         } else {
             LOGGER.info("* A* search failed\n");
         }
@@ -245,6 +246,7 @@ public class ASP extends AbstractPlanner {
             final ASP planner = new ASP();
             CommandLine cmd = new CommandLine(planner);
             cmd.execute("domain_blocks.pddl","blocks_p001.pddl");
+            System.out.println("TEST//////////////////" + (planner.getStatistics().getTimeToParse() + planner.getStatistics().getTimeToEncode()+ planner.getStatistics().getTimeToSearch()));
         } catch (IllegalArgumentException e) {
             LOGGER.fatal(e.getMessage());
         }
@@ -452,11 +454,14 @@ public class ASP extends AbstractPlanner {
     private Plan extractPlan(final Node node, final Problem problem) {
         Node n = node;
         final Plan plan = new SequentialPlan();
+        int compteur = 0;
         while (n.getAction() != -1) {
             final Action a = problem.getActions().get(n.getAction());
             plan.add(0, a);
             n = n.getParent();
+            compteur ++;
         }
+        System.out.println("Longueur du plan " + compteur);
         return plan;
     }
 
