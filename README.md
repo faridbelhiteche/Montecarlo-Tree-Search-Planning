@@ -1,12 +1,19 @@
 # Montecarlo-Tree-Search-Planning
 
 Faire fonctionner le projet :
+
 Créez un nouveau dossier du nom que vous voulez :
+
   $mkdir <nom>
+  
 Placez vous dans ce dossier :
+
   $cd <nom>
+  
 Clonez le répertoire de ce projet dans le répertoire courant :
+
   $git clone https://github.com/faridbelhiteche/Montecarlo-Tree-Search-Planning/ .
+  
 Ouvrez ensuite le projet sur IntelliJ
   
 Vous aurez besoin d'installer un SDK version 18 (IntelliJ devrait normalement le proposer).
