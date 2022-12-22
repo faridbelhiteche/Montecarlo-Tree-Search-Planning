@@ -261,8 +261,8 @@ public class ASP extends AbstractPlanner {
             Map<File, List<File>> pddlFiles = new TreeMap<>();
             pddlFiles.put(new File("pddl/domain_blocks.pddl"), blocks_problems);
             pddlFiles.put(new File("pddl/domain_depots.pddl"), depots_problems);
-            pddlFiles.put(new File("pddl/domain_gripper.pddl"), gripper_problems);
-            pddlFiles.put(new File("pddl/domain_logistics.pddl"), logistics_problems);
+            //pddlFiles.put(new File("pddl/domain_gripper.pddl"), gripper_problems);
+            //pddlFiles.put(new File("pddl/domain_logistics.pddl"), logistics_problems);
 
             for(File domainFile : pddlFiles.keySet()) {
                 for(File problemFile : pddlFiles.get(domainFile)) {
